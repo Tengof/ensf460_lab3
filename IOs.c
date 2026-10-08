@@ -18,15 +18,15 @@ void IOinit(void) {
     CNPU2bits.CN23PUE = 1;
     CNEN2bits.CN23IE = 1;
     
-    /* PB2 = RA4 */
-    TRISAbits.TRISA4 = 1;
-    CNPU1bits.CN0PUE = 1;
-    CNEN1bits.CN0IE = 1;
-    
-    /* PB3 = RB4 */
+    /* PB2 = RB4 */
     TRISBbits.TRISB4 = 1;
     CNPU1bits.CN1PUE = 1;
     CNEN1bits.CN1IE = 1;
+    
+    /* PB3 = RA4 */
+    TRISAbits.TRISA4 = 1;
+    CNPU1bits.CN0PUE = 1;
+    CNEN1bits.CN0IE = 1;
     
     /* CN interrupt */
     IPC4bits.CNIP = 6;
@@ -39,8 +39,8 @@ void IOcheck(void) {
     
     // pressed button reads 0 because of the pull-ups
     uint16_t PB1_pressed = (PORTBbits.RB7 == 0);
-    uint16_t PB2_pressed = (PORTAbits.RA4 == 0);
-    uint16_t PB3_pressed = (PORTBbits.RB4 == 0);
+    uint16_t PB2_pressed = (PORTBbits.RB4 == 0);
+    uint16_t PB3_pressed = (PORTAbits.RA4 == 0);
     
     
     if (PB1_pressed && PB2_pressed && PB3_pressed) {
