@@ -1,6 +1,6 @@
 /*
  * File:   main.c
- * Author: Basema Khan, Michelle Yoon, Vincent Fong
+ * Author: UPDATE THIS WITH YOUR GROUP MEMBER NAMES OR POTENTIALLY LOSE POINTS
  *
  * Created on: USE THE INFORMATION FROM THE HEADER MPLAB X IDE GENERATES FOR YOU
  */
@@ -54,86 +54,68 @@
 #include "clkChange.h"
 #include "UART2.h"
 #include "IOs.h"
+#include "Timer.h"
 
-volatile uint16_t CN_event = 0;
-
-/**
- * You might find it useful to add your own #defines to improve readability here
- */
-
+    
+    
+    
 int main(void) {
-    
-    
+    /** This is usually where you would add run-once code
+     * e.g., peripheral initialization. For the first labs
+     * you might be fine just having it here. For more complex
+     * projects, you might consider having one or more initialize() functions
+     */
+    AD1PCFG = 0xFFFF; /* keep this line as it sets I/O pins that can also be analog to be digital */
+    LATBbits.LATB9 = 1;
     newClk(500);
-    
-    IOinit();
-    
-    // Timer2 Setup
-    T2CONbits.T32 = 0; // Operate timer 2 as 16 bit timer
-    T2CONbits.TCKPS = 1; // Use 1:8 pre-scaler
-    T2CONbits.TCS = 0; // Use internal clock
-    T2CONbits.TSIDL = 0; // Operate in idle mode
-    
-    IPC1bits.T2IP = 2; // 7 is highest and 1 is lowest priority.
-    IFS0bits.T2IF = 0;
-    IEC0bits.T2IE = 1; //enable timer interrupt
-    
-    PR2 = 1562; // A 50ms delay
-    TMR2 = 0;
-    T2CONbits.TON = 0; // Timer2 starts off
-    
-    
-    // Timer3 Setup
-    T3CONbits.TCKPS = 1; // Set pre-scaler to 1:8
-    T3CONbits.TCS = 0; // Use internal clock
-    T3CONbits.TSIDL = 0; //Operate in idle mode
-    
-    IPC2bits.T3IP = 2; // 7 is highest and 1 is lowest priority.
-    IFS0bits.T3IF = 0;
-    IEC0bits.T3IE = 1; //enable timer interrupt
-    
-    TMR3 = 0;
-    T3CONbits.TON = 0;
     
     /* Let's set up our UART */    
     InitUART2();
-  
+    
+    /* Let's set up some I/O */
+    IOinit();
+   
+    /* Let's set up our timers */
+    TimerInit();
+    
+    IOcheck(); // display the starting state ("Nothing pressed")
     
     while(1) {
         
         Idle();
         
-        if(CN_event){
-            CN_event = 0;
+        if (TMR2flag) {
+            TMR2flag = 0;
             IOcheck();
         }
     }
     
     return 0;
 }
-
-
+ 
+ 
 // Timer 2 interrupt subroutine
 void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void){
     //Don't forget to clear the timer 2 interrupt flag!
-    IFS0bits.T2IF = 0; // Clear Timer2 interrupt flag
-    T2CONbits.TON = 0; // Stop Timer2
-    CN_event = 1;
+    IFS0bits.T2IF = 0;
+    T2CONbits.TON = 0; //stop timer
+    TMR2flag = 1; // global variable
 }
-
+ 
+// Timer 3 interrupt subroutine
 void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
     //Don't forget to clear the timer 3 interrupt flag!
-    IFS0bits.T3IF = 0; // Clear Timer3 interrupt flag
+    IFS0bits.T3IF = 0;
     _LATB9 ^= 1;
 }
-
+ 
+// CN interrupt subroutine
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
     //Don't forget to clear the CN interrupt flag!
-    IFS1bits.CNIF = 0; // Clear CN interrupt flag
+    IFS1bits.CNIF = 0;
     
-    T2CONbits.TON = 0; // Stop Timer2
-    TMR2 = 0; // Reset Timer2
-    IFS0bits.T2IF = 0; // Clear Timer2 interrupt flag
+    // restart timer 2 so the buttons are checked 100 ms after the last change
+    T2CONbits.TON = 0;
+    TMR2 = 0;
     T2CONbits.TON = 1;
-
 }
