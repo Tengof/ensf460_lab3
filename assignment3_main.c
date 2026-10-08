@@ -66,7 +66,7 @@ int main(void) {
      * projects, you might consider having one or more initialize() functions
      */
     AD1PCFG = 0xFFFF; /* keep this line as it sets I/O pins that can also be analog to be digital */
-    LATBbits.LATB9 = 1;
+  
     newClk(500);
     
     /* Let's set up our UART */    
